@@ -1,83 +1,86 @@
 import json
 import os
+from tkinter import *
 
-print("Do you want to generate a block or a item?")
-print("1: Block")
-print("2: Item")
-Choice = int(input())
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
+def getjsonfile(choice):
+    dir_path = os.path.dirname(os.path.realpath(__file__))
 
-if Choice == 1 :
-    print("Please enter the name of the block:")
-    BLOCKNAME = str(input())
+    if choice == 1:
 
-    print("Please enter the modid:")
-    MODID = str(input())
+        mod_id = name_modid.get()
 
-    BLOCKLOC = f"{MODID}:block/{BLOCKNAME}"
+        block_name = name_item_block.get()
 
-    blockstate = {
-        'variant':
-            {'' :
-                {'model': f'{BLOCKLOC}'}
+        block_loc = f"{mod_id}:block/{block_name}"
+
+        blockstate = {
+            'variant':
+                {'':
+                    {'model': f'{block_loc}'}
+                 }
+        }
+
+        blockmodel = {
+            'parent': 'block/cube_all',
+            'textures': {
+                'all': f'{block_loc}'
             }
-    }
-
-    blockmodel = {
-        'parent': 'block/cube_all',
-        'textures':{
-            'all': f'{BLOCKLOC}'
         }
-    }
 
-    itemmodel = {
-        'parent': f"{BLOCKLOC}"
-    }
-
-    if not os.path.exists(f'{dir_path}/blockstates') :
-        os.mkdir(f'{dir_path}/blockstates')
-
-    with open(f'{dir_path}/blockstates/{BLOCKNAME}.json', 'w') as f:
-        print(json.dump(blockstate, f, ensure_ascii=False, indent=4))
-        f.close()
-
-    if not os.path.exists(f'{dir_path}/models/block') :
-        os.makedirs(f'{dir_path}/models/block')
-
-    with open(f'{dir_path}/models/block/{BLOCKNAME}.json', 'w') as f:
-        print(json.dump(blockmodel, f, ensure_ascii=False, indent=4))
-        f.close()
-
-    if not os.path.exists(f'{dir_path}/models/item') :
-        os.makedirs(f'{dir_path}/models/item')
-
-    with open(f'{dir_path}/models/item/{BLOCKNAME}.json', 'w') as f:
-        print(json.dump(itemmodel, f, ensure_ascii=False, indent=4))
-        f.close()
-
-
-elif Choice == 2 :
-    print("Please enter the name of the item:")
-    ITEMNAME = str(input())
-
-    print("Please enter the modid:")
-    MODID = str(input())
-
-    item = {
-        'parent': 'item/generated',
-        'textures': {
-            'layer0': f'{MODID}:item/{ITEMNAME}'
+        itemmodel = {
+            'parent': f"{block_loc}"
         }
-    }
 
-    if not os.path.exists(f'{dir_path}/models/item') :
-        os.makedirs(f'{dir_path}/models/item')
+        save_file(dir_path, block_name, 'block', blockstate, mod_id)
+        save_file(dir_path, block_name, 'block', blockmodel, mod_id)
+        save_file(dir_path, block_name, 'block', itemmodel, mod_id)
 
-    with open(f'{dir_path}/models/item/{ITEMNAME}.json', 'w') as f:
-        print(json.dump(item, f, ensure_ascii=False, indent=4))
-        f.close()
+    elif choice == 2:
+        item_name = name_item_block.get()
+
+        mod_id = name_modid.get()
+
+        item = {
+            'parent': 'item/generated',
+            'textures': {
+                'layer0': f'{mod_id}:item/{item_name}'
+            }
+        }
+
+        save_file(dir_path, item_name, 'item', item, mod_id)
 
 
-else :
-    print("please enter a valid number.")
+def save_file(directory, name, choice, jsondata, modid):
+
+    if choice == 'item':
+        full_directory = f'{directory}/assets/{modid}/models/item'
+
+        if not os.path.exists(full_directory):
+            os.makedirs(full_directory)
+
+        with open(f'{full_directory}/{name}.json', 'w') as f:
+            json.dump(jsondata, f, ensure_ascii=False, indent=4)
+            f.close()
+
+    elif choice == 'block':
+        pass
+
+root = Tk()
+
+name_modid = Entry(root, width=30)
+name_modid.grid(row=0)
+name_modid.insert(0, "Enter your modid:")
+
+name_item_block = Entry(root, width=30)
+name_item_block.grid(row=1)
+name_item_block.insert(0, "Enter your item or block name:")
+
+block_button = Button(root, text='block')
+block_button.grid(row=2, column=0)
+
+item_button = Button(root, text='item', command=lambda: getjsonfile(2))
+item_button.grid(row=2, column=1)
+
+root.mainloop()
+  
